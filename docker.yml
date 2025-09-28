@@ -10,11 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # (Optional) Checkout this repo
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Deploy to EC2 using SSH
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v1.0.0
       with:
@@ -22,13 +20,21 @@ jobs:
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # Clone the project repo (if not already there)
-          cd ~/project-1-maven-jenkins-CICD-docker-eks- || git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git && cd project-1-maven-jenkins-CICD-docker-eks-
-          
-          # Stop and remove any existing container
+          # Clone the repo if not already present
+          cd ~/project-1-maven-jenkins-CICD-docker-eks- || \
+          git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git && \
+          cd project-1-maven-jenkins-CICD-docker-eks-
+
+          # Stop and remove existing container if running
           docker stop docker1 || true
           docker rm docker1 || true
-          
-          # Build and run the container
+
+          # Build Docker image
           docker build -t docker1 .
-          docker run -p 8075:8080 -dt docker1
+
+          # Run container with port 8075 and assign name
+          docker run -p 8075:8080 -dt --name docker1 docker1
+
+          # Log for debugging
+          docker ps -a
+          docker logs docker1 || true
