@@ -1,4 +1,4 @@
-name: Docker Build and Deploy to EC2
+name: Deploy to EC2
 
 on:
   push:
@@ -10,32 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout this repository
+    - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Deploy to EC2 and Run Docker
+    - name: SSH and Deploy on EC2
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: 13.202.46.178
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # Stop old container if running
+          # Optional: Clean old container
           docker stop docker1 || true
           docker rm docker1 || true
 
-          # Remove old repo if needed
+          # Remove old code
           rm -rf ~/project-1-maven-jenkins-CICD-docker-eks-
 
-          # Clone your actual repo to EC2
+          # Clone fresh repo
           git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git
           cd project-1-maven-jenkins-CICD-docker-eks-
 
-          # Build Docker image
+          # Build and run container
           docker build -t docker1 .
-
-          # Run container
           docker run -d -p 8075:8080 --name docker1 docker1
 
-          # Optional: Show logs
-          docker ps -a
+          docker ps
