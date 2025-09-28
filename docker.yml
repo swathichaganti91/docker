@@ -20,21 +20,23 @@ jobs:
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # Clone the repo if not already present
-          cd ~/project-1-maven-jenkins-CICD-docker-eks- || \
-          git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git && \
-          cd project-1-maven-jenkins-CICD-docker-eks-
+          set -e  # 🔥 Stop if any command fails
 
-          # Stop and remove existing container if running
+          echo "🔁 Pulling latest code..."
+          cd ~/project-1-maven-jenkins-CICD-docker-eks- || git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git && cd project-1-maven-jenkins-CICD-docker-eks-
+
+          echo "🧹 Stopping old container if exists..."
           docker stop docker1 || true
           docker rm docker1 || true
 
-          # Build Docker image
+          echo "🐳 Building Docker image..."
           docker build -t docker1 .
 
-          # Run container with port 8075 and assign name
-          docker run -p 8075:8080 -dt --name docker1 docker1
+          echo "🚀 Running container on port 8075..."
+          docker run -p 8075:8080 -d --name docker1 docker1
 
-          # Log for debugging
+          echo "📦 Showing all containers..."
           docker ps -a
+
+          echo "📜 Logs from container startup..."
           docker logs docker1 || true
