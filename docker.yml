@@ -1,38 +1,18 @@
-name: Deploy to EC2
+- name: Deploy to EC2
+  uses: appleboy/ssh-action@v1.0.0
+  with:
+    host: 13.202.46.178
+    username: ec2-user
+    key: ${{ secrets.EC2_SSH_KEY }}
+    script: |
+      set -eux
+      cd ~/project-1-maven-jenkins-CICD-docker-eks- || git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git && cd project-1-maven-jenkins-CICD-docker-eks-
 
-on:
-  push:
-    branches:
-      - main
+      docker stop docker1 || true
+      docker rm docker1 || true
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+      docker build -t docker1 .
+      docker run -p 8075:8080 -d --name docker1 docker1
 
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: SSH and Deploy on EC2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: 13.202.46.178
-        username: ec2-user
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          # Optional: Clean old container
-          docker stop docker1 || true
-          docker rm docker1 || true
-
-          # Remove old code
-          rm -rf ~/project-1-maven-jenkins-CICD-docker-eks-
-
-          # Clone fresh repo
-          git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git
-          cd project-1-maven-jenkins-CICD-docker-eks-
-
-          # Build and run container
-          docker build -t docker1 .
-          docker run -d -p 8075:8080 --name docker1 docker1
-
-          docker ps
+      docker ps -a
+      docker logs docker1 || true
