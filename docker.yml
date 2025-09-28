@@ -31,4 +31,4 @@ jobs:
           
           # Build and run the container
           docker build -t docker1 .
-          docker run -p 8075:8080 -d --name docker1 docker1
+          docker run -p 8075:8080 -dt docker1
