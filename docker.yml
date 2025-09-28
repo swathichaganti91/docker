@@ -1,30 +1,39 @@
-- name: Deploy to EC2
+- name: Deploy to EC2 and Debug
   uses: appleboy/ssh-action@v1.0.0
   with:
     host: 13.202.46.178
     username: ec2-user
     key: ${{ secrets.EC2_SSH_KEY }}
     script: |
-      set -ex   # Exit on error + print commands
+      set -ex  # Exit on error, show all commands
 
-      echo "Navigating to project directory or cloning repo..."
-      cd ~/project-1-maven-jenkins-CICD-docker-eks- || (git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git && cd project-1-maven-jenkins-CICD-docker-eks-)
+      echo "📁 Cloning or entering project directory..."
+      if [ -d ~/project-1-maven-jenkins-CICD-docker-eks- ]; then
+        cd ~/project-1-maven-jenkins-CICD-docker-eks-
+        git pull
+      else
+        git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git
+        cd project-1-maven-jenkins-CICD-docker-eks-
+      fi
 
-      echo "Stopping existing container if any..."
+      echo "📄 Checking for Dockerfile..."
+      ls -l Dockerfile || (echo "❌ Dockerfile not found!" && exit 1)
+
+      echo "🧹 Stopping old container (if exists)..."
       docker stop docker1 || true
       docker rm docker1 || true
 
-      echo "Building Docker image..."
-      docker build -t docker1 .
+      echo "🐳 Building image..."
+      docker build -t docker1 . || (echo "❌ Build failed" && exit 1)
 
-      echo "Docker images on host:"
+      echo "📦 Docker images:"
       docker images
 
-      echo "Running container..."
-      docker run -p 8075:8080 -d --name docker1 docker1
+      echo "🚀 Running container..."
+      docker run -p 8075:8080 -d --name docker1 docker1 || (echo "❌ Run failed" && exit 1)
 
-      echo "Containers running now:"
+      echo "📦 Containers:"
       docker ps -a
 
-      echo "Logs from container (if any):"
+      echo "📜 Logs:"
       docker logs docker1 || true
