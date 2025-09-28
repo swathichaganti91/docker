@@ -20,23 +20,28 @@ jobs:
         username: ec2-user
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          set -e  # 🔥 Stop if any command fails
+          set -e  # Exit on first error
 
           echo "🔁 Pulling latest code..."
-          cd ~/project-1-maven-jenkins-CICD-docker-eks- || git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git && cd project-1-maven-jenkins-CICD-docker-eks-
+          cd ~/project-1-maven-jenkins-CICD-docker-eks- || \
+            git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git && \
+            cd project-1-maven-jenkins-CICD-docker-eks-
 
           echo "🧹 Stopping old container if exists..."
           docker stop docker1 || true
           docker rm docker1 || true
 
           echo "🐳 Building Docker image..."
-          docker build -t docker1 .
+          docker build -t docker1 . || { echo '❌ Docker build failed'; exit 1; }
+
+          echo "📦 Checking available Docker images..."
+          docker images
 
           echo "🚀 Running container on port 8075..."
-          docker run -p 8075:8080 -d --name docker1 docker1
+          docker run -p 8075:8080 -d --name docker1 docker1 || { echo '❌ Docker run failed'; exit 1; }
 
-          echo "📦 Showing all containers..."
+          echo "📦 Listing all containers..."
           docker ps -a
 
-          echo "📜 Logs from container startup..."
+          echo "📜 Showing container logs..."
           docker logs docker1 || true
