@@ -10,25 +10,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    # (Optional) Checkout THIS repo — remove if not needed
+    - name: Checkout this repository
       uses: actions/checkout@v3
+
+    # Clone external repo where Dockerfile is located
     - name: Clone external repo
       run: git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git
 
-
+    # Set up Docker Buildx (for advanced builds)
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    # Build Docker image inside the cloned repo folder
     - name: Build Docker image
-      run: docker build -t docker1 .
+      run: docker build -t docker1 ./project-1-maven-jenkins-CICD-docker-eks-
 
+    # Run Docker container
     - name: Run Docker container
       run: docker run -p 8075:8080 -d docker1
 
+    # Success message
     - name: Success Message
       if: success()
       run: echo "App deployed on http://13.202.46.178:8075"
 
+    # Failure message
     - name: Failure Message
       if: failure()
       run: echo "Build failed"
