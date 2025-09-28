@@ -1,47 +1,30 @@
-name: Docker Build and Deploy to EC2
+- name: Deploy to EC2
+  uses: appleboy/ssh-action@v1.0.0
+  with:
+    host: 13.202.46.178
+    username: ec2-user
+    key: ${{ secrets.EC2_SSH_KEY }}
+    script: |
+      set -ex   # Exit on error + print commands
 
-on:
-  push:
-    branches:
-      - main
+      echo "Navigating to project directory or cloning repo..."
+      cd ~/project-1-maven-jenkins-CICD-docker-eks- || (git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git && cd project-1-maven-jenkins-CICD-docker-eks-)
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+      echo "Stopping existing container if any..."
+      docker stop docker1 || true
+      docker rm docker1 || true
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      echo "Building Docker image..."
+      docker build -t docker1 .
 
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: 13.202.46.178
-        username: ec2-user
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          set -e  # Exit on first error
+      echo "Docker images on host:"
+      docker images
 
-          echo "🔁 Pulling latest code..."
-          cd ~/project-1-maven-jenkins-CICD-docker-eks- || \
-            git clone https://github.com/swathichaganti91/project-1-maven-jenkins-CICD-docker-eks-.git && \
-            cd project-1-maven-jenkins-CICD-docker-eks-
+      echo "Running container..."
+      docker run -p 8075:8080 -d --name docker1 docker1
 
-          echo "🧹 Stopping old container if exists..."
-          docker stop docker1 || true
-          docker rm docker1 || true
+      echo "Containers running now:"
+      docker ps -a
 
-          echo "🐳 Building Docker image..."
-          docker build -t docker1 . || { echo '❌ Docker build failed'; exit 1; }
-
-          echo "📦 Checking available Docker images..."
-          docker images
-
-          echo "🚀 Running container on port 8075..."
-          docker run -p 8075:8080 -d --name docker1 docker1 || { echo '❌ Docker run failed'; exit 1; }
-
-          echo "📦 Listing all containers..."
-          docker ps -a
-
-          echo "📜 Showing container logs..."
-          docker logs docker1 || true
+      echo "Logs from container (if any):"
+      docker logs docker1 || true
