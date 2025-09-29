@@ -5,6 +5,7 @@
     username: ec2-user
     key: ${{ secrets.EC2_SSH_KEY }}
     script: |
-      docker version
-      docker info
-      docker ps -a
+     # docker version
+     # docker info
+     # docker ps -a
+       touch "swathi123"
