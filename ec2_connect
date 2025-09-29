@@ -1,11 +1,11 @@
 - name: Test Docker on EC2
   uses: appleboy/ssh-action@v1.0.0
   with:
-    host: ${{EC2_HOST}}
+    host: ${{ secrets.EC2_HOST }}
     username: ec2-user
     key: ${{ secrets.EC2_SSH_KEY }}
     script: |
-     # docker version
-     # docker info
-     # docker ps -a
-       touch "swathi123"
+      docker version
+      docker info
+      docker ps -a
+      touch swathi123
