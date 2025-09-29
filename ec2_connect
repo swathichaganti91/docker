@@ -4,8 +4,11 @@
     host: ${{ secrets.EC2_HOST }}
     username: ec2-user
     key: ${{ secrets.EC2_SSH_KEY }}
-    script: |
-      docker version
-      docker info
-      docker ps -a
-      touch swathi123
+  #  script: |
+      #docker version
+      #docker info
+      #docker ps -a
+  script: |
+    pwd
+    touch /home/ec2-user/swathi123
+    ls -l /home/ec2-user/swathi123
